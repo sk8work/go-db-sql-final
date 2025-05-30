@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
 	"time"
@@ -56,22 +57,24 @@ func TestAddGetDelete(t *testing.T) {
 
 	// add
 	id, err := store.Add(parcel)
-	require.NoError(t, err)
-	require.NotZero(t, id)
+	if assert.NoError(t, err) {
+		assert.NotZero(t, id)
+	}
 	parcel.Number = id
 
 	// get
 	storedParcel, err := store.Get(id)
-	require.NoError(t, err)
-	require.Equal(t, parcel, storedParcel)
+	if assert.NoError(t, err) {
+		assert.Equal(t, parcel, storedParcel)
+	}
 
 	// delete
 	err = store.Delete(id)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	// check deleted
 	_, err = store.Get(id)
-	require.ErrorIs(t, err, sql.ErrNoRows)
+	assert.ErrorIs(t, err, sql.ErrNoRows)
 }
 
 func TestSetAddress(t *testing.T) {
@@ -83,18 +86,19 @@ func TestSetAddress(t *testing.T) {
 
 	// add
 	id, err := store.Add(parcel)
-	require.NoError(t, err)
-	require.NotZero(t, id)
+	if assert.NoError(t, err) {
+		assert.NotZero(t, id)
+	}
 
 	// set address
 	newAddress := "new test address"
 	err = store.SetAddress(id, newAddress)
-	require.NoError(t, err)
-
-	// check
-	updatedParcel, err := store.Get(id)
-	require.NoError(t, err)
-	require.Equal(t, newAddress, updatedParcel.Address)
+	if assert.NoError(t, err) {
+		updatedParcel, err := store.Get(id)
+		if assert.NoError(t, err) {
+			assert.Equal(t, newAddress, updatedParcel.Address)
+		}
+	}
 }
 
 func TestSetStatus(t *testing.T) {
@@ -106,17 +110,18 @@ func TestSetStatus(t *testing.T) {
 
 	// add
 	id, err := store.Add(parcel)
-	require.NoError(t, err)
-	require.NotZero(t, id)
+	if assert.NoError(t, err) {
+		assert.NotZero(t, id)
+	}
 
 	// set status
 	err = store.SetStatus(id, ParcelStatusSent)
-	require.NoError(t, err)
-
-	// check
-	updatedParcel, err := store.Get(id)
-	require.NoError(t, err)
-	require.Equal(t, ParcelStatusSent, updatedParcel.Status)
+	if assert.NoError(t, err) {
+		updatedParcel, err := store.Get(id)
+		if assert.NoError(t, err) {
+			assert.Equal(t, ParcelStatusSent, updatedParcel.Status)
+		}
+	}
 }
 
 func TestGetByClient(t *testing.T) {
@@ -139,23 +144,24 @@ func TestGetByClient(t *testing.T) {
 	// add
 	for i := 0; i < len(parcels); i++ {
 		id, err := store.Add(parcels[i])
-		require.NoError(t, err)
-		require.NotZero(t, id)
-
-		parcels[i].Number = id
-		parcelMap[id] = parcels[i]
+		if assert.NoError(t, err) {
+			assert.NotZero(t, id)
+			parcels[i].Number = id
+			parcelMap[id] = parcels[i]
+		}
 	}
 
 	// get by client
 	storedParcels, err := store.GetByClient(client)
-	require.NoError(t, err)
-	require.Len(t, storedParcels, len(parcels))
+	if assert.NoError(t, err) {
+		assert.Len(t, storedParcels, len(parcels))
 
-	// check
-	for _, parcel := range storedParcels {
-		expected, exists := parcelMap[parcel.Number]
-		require.True(t, exists)
-		require.Equal(t, expected, parcel)
+		// check
+		for _, parcel := range storedParcels {
+			expected, exists := parcelMap[parcel.Number]
+			if assert.True(t, exists) {
+				assert.Equal(t, expected, parcel)
+			}
+		}
 	}
-	// done
 }
